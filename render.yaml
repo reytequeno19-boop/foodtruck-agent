@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: foodtruck-agent
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: TOOL_SECRET
+        generateValue: true
+      - key: SQUARE_ACCESS_TOKEN
+        sync: false
+      - key: SQUARE_ENVIRONMENT
+        value: production
+      - key: SQUARE_LOCATION_ID
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_PHONE_NUMBER
+        sync: false
+      - key: OPERATOR_PHONE_NUMBER
+        sync: false
