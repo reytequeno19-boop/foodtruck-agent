@@ -1,0 +1,70 @@
+{
+  "name": {
+    "es": "Rey Tequeño Davenport",
+    "en": "Rey Tequeno Davenport"
+  },
+  "cuisine": {
+    "es": "Comida venezolana",
+    "en": "Venezuelan food"
+  },
+  "hours": {
+    "es": "Estamos abiertos todos los días de 6 de la mañana a 3 de la tarde.",
+    "en": "We are open every day from 6 in the morning to 3 in the afternoon."
+  },
+  "schedule": {
+    "es": "Estamos abiertos todos los días de 6 de la mañana a 3 de la tarde.",
+    "en": "We are open every day from 6 in the morning to 3 in the afternoon."
+  },
+  "location": {
+    "es": "Estamos en 44079 US-27, Davenport, Florida, código postal 33897.",
+    "en": "We are at 44079 US-27, Davenport, Florida, zip code 33897."
+  },
+  "address": {
+    "es": "44079 US-27, Davenport, Florida, 33897.",
+    "en": "44079 US-27, Davenport, Florida, 33897."
+  },
+  "contact": {
+    "es": "Puedes llamarnos al 407-361-9274 o escribirnos a reytequeno19@gmail.com.",
+    "en": "You can call us at 407-361-9274 or email us at reytequeno19@gmail.com."
+  },
+  "phone": {
+    "es": "Nuestro número es 407-361-9274.",
+    "en": "Our phone number is 407-361-9274."
+  },
+  "email": {
+    "es": "Nuestro correo es reytequeno19@gmail.com.",
+    "en": "Our email is reytequeno19@gmail.com."
+  },
+  "website": {
+    "es": "Nuestro sitio web es www.reytequeno.com.",
+    "en": "Our website is www.reytequeno.com."
+  },
+  "web": {
+    "es": "Nuestro sitio web es www.reytequeno.com.",
+    "en": "Our website is www.reytequeno.com."
+  },
+  "social": {
+    "es": "Síguenos en Instagram como @reytequenofl.",
+    "en": "Follow us on Instagram at @reytequenofl."
+  },
+  "instagram": {
+    "es": "Nuestro Instagram es @reytequenofl.",
+    "en": "Our Instagram is @reytequenofl."
+  },
+  "payment": {
+    "es": "Aceptamos todas las tarjetas de crédito y débito. Para pedidos por teléfono te enviamos un enlace de pago seguro por mensaje de texto.",
+    "en": "We accept all major credit and debit cards. For phone orders, we send a secure payment link by text message."
+  },
+  "parking": {
+    "es": "Tenemos estacionamiento disponible en el lugar.",
+    "en": "We have parking available on site."
+  },
+  "delivery": {
+    "es": "Por ahora ofrecemos pickup en el food truck. Para hacer un pedido, te genero un enlace de pago y lo recoges cuando llegues.",
+    "en": "For now we offer pickup at the food truck. To place an order, I'll generate a payment link and you can pick it up when you arrive."
+  },
+  "languages": {
+    "es": "Atendemos en español e inglés.",
+    "en": "We serve customers in Spanish and English."
+  }
+}
