@@ -1,0 +1,188 @@
+{
+  "name": "Maria - Rey Tequeno Davenport",
+  "firstMessage": "¡Hola! Bienvenido a Rey Tequeño Davenport, mi nombre es María. ¿En qué puedo ayudarte hoy? Hi there, welcome to Rey Tequeño Davenport, this is Maria. How can I help you?",
+  "firstMessageMode": "assistant-speaks-first",
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-2",
+    "language": "multi",
+    "smartFormat": true
+  },
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "temperature": 0.4,
+    "maxTokens": 250,
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are María, the friendly bilingual phone agent for Rey Tequeño Davenport, a Venezuelan food truck in Davenport, Florida. You speak both Spanish and English fluently. Detect the caller's language from their FIRST utterance and respond in that language for the rest of the call — match exactly what they speak. If they switch, you switch.\n\nYOUR JOB:\n1. Take orders from callers and create them in our Square system.\n2. Send the customer a payment link by SMS so they pay before pickup.\n3. Answer questions about hours, location, website, contact, payment, parking, social media.\n4. If something is outside your scope, transfer to a human via the transfer_to_human tool.\n\nCRITICAL RULES:\n- NEVER ask for credit card numbers, CVV, expiration dates, or any payment data on the call. Payment is ALWAYS via the SMS link.\n- For orders: get the items, customer name, and customer cell phone number. Confirm the order back. Then call send_payment_link, which creates the order, generates the link, and texts it to them.\n- Always confirm back what you understood (especially the phone number — repeat the digits clearly).\n- Be brief, warm, and natural. Don't list the entire menu unless asked. If asked, name 4-6 popular items and offer to read more.\n- For business info questions, use the get_business_info tool with the right topic (hours, location, website, contact, payment, parking, social).\n- If the caller is upset, asks for a manager, or needs something outside your scope, use transfer_to_human and tell them someone will call back shortly.\n- Never invent prices or items — always use get_menu first if you need to confirm what's available.\n- When you confirm a phone number, read it back digit by digit (e.g., 'four-zero-seven, three-six-one, nine-two-seven-four').\n\nORDER FLOW:\n1. Greet, ask what they want.\n2. Use get_menu if they ask 'what do you have' or you need to verify an item.\n3. Take items + quantities.\n4. Ask for their name.\n5. Ask for their cell phone number to send the payment link via text.\n6. Read back the full order + total + the phone number you'll text.\n7. Once confirmed, call send_payment_link with items, customer_name, customer_phone, and language.\n8. Tell them the link is on its way and to pay before they arrive. Give pickup address.\n9. Thank them and offer anything else.\n\nLANGUAGE STYLE:\n- Spanish: warm, slightly informal Venezuelan style ('te enviamos el enlace por mensaje').\n- English: friendly, clear, short sentences.\n- Numbers in Spanish: read phone numbers as individual digits, prices as full numbers ('cinco dólares con noventa y nueve').\n\nIf the caller is silent or you can't understand, ask once more in both languages: '¿Puedes repetir? / Can you repeat that?'"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_menu",
+          "description": "Fetch the current menu with items, descriptions, and prices.",
+          "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        "server": {
+          "url": "https://YOUR_RENDER_URL.onrender.com/tools/get_menu",
+          "headers": { "x-tool-secret": "YOUR_TOOL_SECRET" }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "create_order",
+          "description": "Create a Square order with the given items. Use this if you want to create an order WITHOUT sending a payment link yet (rare). Most of the time use send_payment_link instead.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "catalog_object_id": { "type": "string", "description": "Square catalog variation ID" },
+                    "quantity": { "type": "integer", "description": "How many", "minimum": 1 }
+                  },
+                  "required": ["catalog_object_id", "quantity"]
+                }
+              },
+              "customer_name": { "type": "string" }
+            },
+            "required": ["items"]
+          }
+        },
+        "server": {
+          "url": "https://YOUR_RENDER_URL.onrender.com/tools/create_order",
+          "headers": { "x-tool-secret": "YOUR_TOOL_SECRET" }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "send_payment_link",
+          "description": "Create an order in Square, generate a payment link, and send it to the customer via SMS. This is the main tool for completing orders. Always call this AFTER confirming the order with the customer.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "catalog_object_id": { "type": "string" },
+                    "quantity": { "type": "integer", "minimum": 1 }
+                  },
+                  "required": ["catalog_object_id", "quantity"]
+                }
+              },
+              "customer_name": { "type": "string" },
+              "customer_phone": { "type": "string", "description": "Cell phone in any common format. The backend normalizes to E.164." },
+              "note": { "type": "string", "description": "Optional special instructions" },
+              "language": { "type": "string", "enum": ["es", "en"], "description": "Language for the SMS message" }
+            },
+            "required": ["items", "customer_name", "customer_phone"]
+          }
+        },
+        "server": {
+          "url": "https://YOUR_RENDER_URL.onrender.com/tools/send_payment_link",
+          "headers": { "x-tool-secret": "YOUR_TOOL_SECRET" }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "send_sms",
+          "description": "Send a free-form SMS to a phone number. Rarely needed; prefer send_payment_link for orders.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "to": { "type": "string" },
+              "body": { "type": "string" }
+            },
+            "required": ["to", "body"]
+          }
+        },
+        "server": {
+          "url": "https://YOUR_RENDER_URL.onrender.com/tools/send_sms",
+          "headers": { "x-tool-secret": "YOUR_TOOL_SECRET" }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "get_business_info",
+          "description": "Get information about Rey Tequeño Davenport: hours, location, website, contact, payment, parking, social media. Pick a topic and the appropriate language.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "topic": {
+                "type": "string",
+                "description": "What to look up: hours, location, contact, website, social, payment, parking, delivery, cuisine, name, languages"
+              },
+              "language": { "type": "string", "enum": ["es", "en"] }
+            },
+            "required": ["topic", "language"]
+          }
+        },
+        "server": {
+          "url": "https://YOUR_RENDER_URL.onrender.com/tools/get_business_info",
+          "headers": { "x-tool-secret": "YOUR_TOOL_SECRET" }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "transfer_to_human",
+          "description": "Notify a human operator via SMS that this caller needs help. Use when the caller is upset, asks for a manager, or wants something you can't do.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "reason": { "type": "string" },
+              "customer_phone": { "type": "string" },
+              "customer_name": { "type": "string" },
+              "summary": { "type": "string", "description": "What they were asking for" },
+              "language": { "type": "string", "enum": ["es", "en"] }
+            },
+            "required": ["reason", "language"]
+          }
+        },
+        "server": {
+          "url": "https://YOUR_RENDER_URL.onrender.com/tools/transfer_to_human",
+          "headers": { "x-tool-secret": "YOUR_TOOL_SECRET" }
+        }
+      }
+    ]
+  },
+  "voice": {
+    "provider": "11labs",
+    "voiceId": "EXAVITQu4vr4xnSDxMaL",
+    "model": "eleven_turbo_v2_5",
+    "stability": 0.5,
+    "similarityBoost": 0.75
+  },
+  "endCallPhrases": [
+    "goodbye",
+    "bye bye",
+    "have a good one",
+    "talk to you later",
+    "hasta luego",
+    "adiós",
+    "que tengas buen día",
+    "nos vemos"
+  ],
+  "silenceTimeoutSeconds": 30,
+  "maxDurationSeconds": 600,
+  "backgroundSound": "off",
+  "responseDelaySeconds": 0.4,
+  "llmRequestDelaySeconds": 0.1,
+  "numWordsToInterruptAssistant": 2
+}
