@@ -11,14 +11,12 @@ const { getBusinessInfo } = require('./src/business');
 const app = express();
 app.use(express.json({ limit: '1mb' }));
 
-// ─── Logging middleware (light) ────────────────────────────────
 app.use((req, _res, next) => {
   const ts = new Date().toISOString();
   console.log(`[${ts}] ${req.method} ${req.path}`);
   next();
 });
 
-// ─── Health check (no auth) ────────────────────────────────────
 app.get('/healthz', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -38,25 +36,18 @@ app.get('/', (_req, res) => {
   });
 });
 
-// ─── Auth middleware for /tools/* ──────────────────────────────
 function requireToolSecret(req, res, next) {
   const expected = process.env.TOOL_SECRET;
   if (!expected) {
-    return res
-      .status(500)
-      .json({ success: false, error: 'TOOL_SECRET not configured on server' });
+    return res.status(500).json({ success: false, error: 'TOOL_SECRET not configured on server' });
   }
   const got = req.header('x-tool-secret');
   if (got !== expected) {
-    return res
-      .status(401)
-      .json({ success: false, error: 'Unauthorized: invalid or missing x-tool-secret' });
+    return res.status(401).json({ success: false, error: 'Unauthorized: invalid or missing x-tool-secret' });
   }
   next();
 }
 
-// Vapi sends payload as { message: { toolCalls: [{ id, function: { name, arguments } }] } }
-// OR (legacy / direct mode) just the args directly.
 function extractArgs(req) {
   const body = req.body || {};
   if (body.message && Array.isArray(body.message.toolCalls) && body.message.toolCalls.length > 0) {
@@ -84,7 +75,6 @@ function wrapResult(toolCallId, result) {
   return result;
 }
 
-// ─── Tool 1: get_menu ──────────────────────────────────────────
 app.post('/tools/get_menu', requireToolSecret, async (req, res) => {
   const { toolCallId } = extractArgs(req);
   try {
@@ -95,7 +85,6 @@ app.post('/tools/get_menu', requireToolSecret, async (req, res) => {
   }
 });
 
-// ─── Tool 2: create_order ──────────────────────────────────────
 app.post('/tools/create_order', requireToolSecret, async (req, res) => {
   const { args, toolCallId } = extractArgs(req);
   const items = args.items || args.line_items || [];
@@ -108,7 +97,6 @@ app.post('/tools/create_order', requireToolSecret, async (req, res) => {
   }
 });
 
-// ─── Tool 3: send_payment_link ─────────────────────────────────
 app.post('/tools/send_payment_link', requireToolSecret, async (req, res) => {
   const { args, toolCallId } = extractArgs(req);
   const items = args.items || args.line_items || [];
@@ -132,8 +120,8 @@ app.post('/tools/send_payment_link', requireToolSecret, async (req, res) => {
 
     const smsBody =
       language === 'en'
-        ? `Rey Tequeño Davenport: thanks ${customerName || 'for your order'}! Total $${orderResult.total_usd.toFixed(2)}. Pay here: ${orderResult.payment_url}`
-        : `Rey Tequeño Davenport: gracias ${customerName || 'por tu pedido'}! Total $${orderResult.total_usd.toFixed(2)}. Paga aquí: ${orderResult.payment_url}`;
+        ? `Rey Tequeno Davenport: thanks ${customerName || 'for your order'}! Total $${orderResult.total_usd.toFixed(2)}. Pay here: ${orderResult.payment_url}`
+        : `Rey Tequeno Davenport: gracias ${customerName || 'por tu pedido'}! Total $${orderResult.total_usd.toFixed(2)}. Paga aqui: ${orderResult.payment_url}`;
 
     const smsResult = await sendSms(customerPhone, smsBody);
 
@@ -153,7 +141,6 @@ app.post('/tools/send_payment_link', requireToolSecret, async (req, res) => {
   }
 });
 
-// ─── Tool 4: send_sms ──────────────────────────────────────────
 app.post('/tools/send_sms', requireToolSecret, async (req, res) => {
   const { args, toolCallId } = extractArgs(req);
   const to = args.to || args.phone || args.customer_phone;
@@ -171,7 +158,6 @@ app.post('/tools/send_sms', requireToolSecret, async (req, res) => {
   }
 });
 
-// ─── Tool 5: get_business_info ─────────────────────────────────
 app.post('/tools/get_business_info', requireToolSecret, (req, res) => {
   const { args, toolCallId } = extractArgs(req);
   const topic = args.topic || '';
@@ -180,7 +166,6 @@ app.post('/tools/get_business_info', requireToolSecret, (req, res) => {
   res.json(wrapResult(toolCallId, result));
 });
 
-// ─── Tool 6: transfer_to_human ─────────────────────────────────
 app.post('/tools/transfer_to_human', requireToolSecret, async (req, res) => {
   const { args, toolCallId } = extractArgs(req);
   const reason = args.reason || 'unspecified';
@@ -195,10 +180,10 @@ app.post('/tools/transfer_to_human', requireToolSecret, async (req, res) => {
   }
 
   const smsBody =
-    `[Rey Tequeño] Cliente necesita ayuda humana.\n` +
+    `[Rey Tequeno] Cliente necesita ayuda humana.\n` +
     `Nombre: ${customerName}\n` +
     `Tel: ${customerPhone || 'no provisto'}\n` +
-    `Razón: ${reason}\n` +
+    `Razon: ${reason}\n` +
     (summary ? `Resumen: ${summary}\n` : '') +
     `Idioma: ${language}`;
 
@@ -212,9 +197,22 @@ app.post('/tools/transfer_to_human', requireToolSecret, async (req, res) => {
         message_to_customer:
           language === 'en'
             ? "I've notified our team. Someone will call or text you back shortly."
-            : 'He notificado a nuestro equipo. Alguien se comunicará contigo en breve.',
+            : 'He notificado a nuestro equipo. Alguien se comunicara contigo en breve.',
         sms_error: smsResult.success ? null : smsResult.error,
       })
     );
   } catch (err) {
-    res.status(500).json(wrapResult(toolCallId, { success: false, error: err.mes
+    res.status(500).json(wrapResult(toolCallId, { success: false, error: err.message }));
+  }
+});
+
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: `Not found: ${req.method} ${req.path}` });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`foodtruck-agent listening on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Square environment: ${process.env.SQUARE_ENVIRONMENT || 'production'}`);
+});
