@@ -50,14 +50,18 @@ async function sendSms(to, body) {
     return { success: false, error: `Invalid phone number: ${to}` };
   }
 
-  const from = process.env.TWILIO_FROM_PHONE_NUMBER;
+  const useWhatsApp = !!process.env.TWILIO_WHATSAPP_FROM;
+  const from = useWhatsApp
+    ? `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`
+    : process.env.TWILIO_FROM_PHONE_NUMBER;
   if (!from) {
-    return { success: false, error: 'TWILIO_FROM_PHONE_NUMBER not configured' };
+    return { success: false, error: 'No Twilio sender configured (TWILIO_WHATSAPP_FROM or TWILIO_FROM_PHONE_NUMBER)' };
   }
+  const toAddress = useWhatsApp ? `whatsapp:${normalizedTo}` : normalizedTo;
 
   try {
     const message = await getClient().messages.create({
-      to: normalizedTo,
+      to: toAddress,
       from,
       body,
     });
